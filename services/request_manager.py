@@ -2,10 +2,12 @@ import queue
 import requests
 
 from services.process_executor import ProcessExecutor
+from services.process_pool_executor import ProcessPoolExecutor
 from services.thread_executor import ThreadExecutor
 
 
 class RequestManager:
+    MODE_POOL = 'pool'
     MODE_PROCESS = 'process'
     MODE_THREADS = 'threads'
 
@@ -13,16 +15,16 @@ class RequestManager:
         self.queue = queue.Queue()
         self.logger = logger
         self.responses = []
+        self.mode = self.MODE_THREADS
         if mode == self.MODE_PROCESS:
             self.mode = self.MODE_PROCESS
-        else:
-            self.mode = self.MODE_THREADS
+        elif mode == self.MODE_POOL:
+            self.mode = self.MODE_POOL
 
     def get_response_list(self):
         return self.responses
 
     def add_request_list(self, request_list):
-        # map(self.queue.put, request_list)
         for req in request_list:
             self.queue.put(req)
 
@@ -36,8 +38,13 @@ class RequestManager:
             self.logger.info('Empty queue...')
             result = False
         else:
+            # Choose the type of process to do
             if self.mode == self.MODE_PROCESS:
                 executor = ProcessExecutor(self.queue, self.logger)
+                executor.execute(self._do_request, self.on_finish)
+
+            elif self.mode == self.MODE_POOL:
+                executor = ProcessPoolExecutor(self.queue, self.logger)
                 executor.execute(self._do_request, self.on_finish)
 
             else:

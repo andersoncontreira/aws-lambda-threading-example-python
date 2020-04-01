@@ -7,6 +7,11 @@ class AppTestCase(unittest.TestCase):
         result = app.process_handler({}, {})
         self.assertTrue(result != [])
 
+    def test_process_pool_handler(self):
+        # not supported
+        result = app.process_pool_handler({}, {})
+        self.assertTrue(result != [])
+
     def test_thread_handler(self):
         result = app.thread_handler({}, {})
         self.assertTrue(result != [])

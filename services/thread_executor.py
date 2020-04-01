@@ -30,6 +30,7 @@ class ThreadExecutor:
                 try:
                     for i in range(futures_count):
                         futures.append(executor.submit(future_fn))
+
                     finished = concurrent.futures.wait(futures, return_when=concurrent.futures.ALL_COMPLETED)
                     if finished:
                         self._executing = False
